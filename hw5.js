@@ -15,6 +15,7 @@ var options1 = {
     type:'movies'	// endpoint to collection
 };
 
+// GET whole movie collection
 router.route('/movies').get(function(request,response) {
 	dataClient.createCollection(options1, function(error, movies) {
 			if(error){
@@ -37,11 +38,10 @@ router.route('/movies').get(function(request,response) {
 
 });
 
-
+// GET specific movie
 router.route('/movies/:name').get(function(request,response)  {
 	var options2 = {
         type: 'movies' 
-	    //uuid:request.params.id
 	}
 	
 	dataClient.createEntity(options2, function(error, movie) {
@@ -49,7 +49,7 @@ router.route('/movies/:name').get(function(request,response)  {
             //error
 		}
 		else {
-			
+			// if query parameter has review = true
 			if(request.query.review == "true") {
 				// main movie collection
 				var main_collection = {
@@ -61,6 +61,7 @@ router.route('/movies/:name').get(function(request,response)  {
 				};
 				// relationship that connects the collection is "name" of movie
 				var relationship = 'name';
+					// Connect movie collection with review collection
 					Usergrid.connect(main_collection, relationship, connected_collection, function(error, result) {
 						if(error) {
 							// error connecting
@@ -80,7 +81,9 @@ router.route('/movies/:name').get(function(request,response)  {
 
 });
 
+// POST movie
 router.route('/movies').post(function(request,response) {
+	// properties holds the information for new movie to POST
 	var properties = {
 		type: 'movie',
 		name: request.query.name, 			// name from query 
@@ -90,7 +93,7 @@ router.route('/movies').post(function(request,response) {
 
 	dataClient.createEntity(properties, function(error, result) {
 		if(error) {
-            // error in POST
+        	    // error in POST
 		}
 		else{
 
@@ -105,6 +108,7 @@ router.route('/movies').post(function(request,response) {
 				};
 				// relationship that connects the collection is "name" of movie
 				var relationship = 'name';
+					// connect movie collection with review collection
 					Usergrid.connect(main_collection, relationship, connected_collection, function(error, result) {
 						if(error) {
 							// error connecting
