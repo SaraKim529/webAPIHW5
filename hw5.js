@@ -24,40 +24,14 @@ router.route('/movies').get(function(request,response) {
 			else {
 				// If review == true in query parameters
 				// Also GET movie reviews
-				if(request.query.review == "true")
-				{
-					// main movie collection
-					var main_collection = {
-						type:'movies'
-					};
-					// review collection that will be connected
-					var connected_collection = {
-						type:'reviews'
-					};
-					// relationship that connects the collection is "name" of movie
-					var relationship = 'name';
-
-						Usergrid.connect(main_collection, relationship, connected_collection, function(error, result) {
-							if(error) {
-								// error connecting
-							}
-							else {
-								var reviewResponse = response.json(result);
-								response.end();
-							}
-						});
-				}
-				else {
-					var movieArr = [];		// Create array to hold whole collection
-						// While next entity in movie collection exists, 
-						// continue pusing into array
-						while(movies.hasNextEntity()) {
-							movieArr.push(movies.getNextEntity().get());
-						}
-					response.json(movieArr);	// Send movieArray content as json body response
-					response.end();
-				}
-
+				var movieArr = [];		// Create array to hold whole collection
+					// While next entity in movie collection exists, 
+					// continue pusing into array
+					while(movies.hasNextEntity()) {
+						movieArr.push(movies.getNextEntity().get());
+					}
+				response.json(movieArr);	// Send movieArray content as json body response
+				response.end();
 			}
 	});
 
@@ -66,17 +40,85 @@ router.route('/movies').get(function(request,response) {
 
 router.route('/movies/:name').get(function(request,response)  {
 	var options2 = {
-        type: 'movies', 
+        type: 'movies' 
 	    //uuid:request.params.id
-	};
+	}
 	
 	dataClient.createEntity(options2, function(error, movie) {
 		if(error) {
             //error
 		}
 		else {
-			response.json(movie.get());
-			response.end();
+			
+			if(request.query.review == "true") {
+				// main movie collection
+				var main_collection = {
+					type:'movies'
+			    };
+				// review collection that will be connected
+				var connected_collection = {
+					type:'reviews'
+				};
+				// relationship that connects the collection is "name" of movie
+				var relationship = 'name';
+					Usergrid.connect(main_collection, relationship, connected_collection, function(error, result) {
+						if(error) {
+							// error connecting
+						}
+						else {
+							var reviewResponse = response.json(result);
+							response.end();
+						}
+					});
+			}
+			else {
+				response.json(movie.get());
+				response.end();
+			}
+		}
+	});
+
+});
+
+router.route('/movies').post(function(request,response) {
+	var properties = {
+		type: 'movie',
+		name: request.query.name, 			// name from query 
+		year: request.query.year,			// year from query
+		actors: request.query.actors,		// actors from query
+	};
+
+	dataClient.createEntity(properties, function(error, result) {
+		if(error) {
+            // error in POST
+		}
+		else{
+
+			if(request.query.review == "true") {
+				// main movie collection
+				var main_collection = {
+					type:'movies'
+			    };
+				// review collection that will be connected
+				var connected_collection = {
+					type:'reviews'
+				};
+				// relationship that connects the collection is "name" of movie
+				var relationship = 'name';
+					Usergrid.connect(main_collection, relationship, connected_collection, function(error, result) {
+						if(error) {
+							// error connecting
+						}
+						else {
+							var reviewResponse = response.json(result);
+							response.end();
+						}
+					});				
+			}
+
+			else {
+
+			}
 		}
 	});
 
